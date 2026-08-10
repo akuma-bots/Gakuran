@@ -24,11 +24,11 @@ function isAdmin(interaction) {
   if (!adminRoleId) return false;
   return roles.includes(adminRoleId);
 }
-function store() {
+function dataStore() {
   return getStore({
     name: 'gakuran-data',
     siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_BLOGS_TOKEN,
+    token: process.env.NETLIFY_BLOBS_TOKEN,
   });
 }
 
