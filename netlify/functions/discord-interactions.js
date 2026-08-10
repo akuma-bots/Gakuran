@@ -3,7 +3,7 @@ const { getStore } = require('@netlify/blobs');
 
 const DEFAULT_EVENTS = [
   { id: 'ev1', title: 'Torneio de Verão', date: '2026-08-15T20:00:00-03:00', description: 'Chaveamento 3v3, eliminação dupla. Premiação em destaque no hub para o time campeão.', capacity: 32 },
-  { id: 'ev2', title: 'Brawl: Kurogami vs Akatsuba', date: '2026-08-16T19:00:00-03:00', description: 'Confronto direto entre as duas gangs no topo do ranking. Transmissão ao vivo no Discord.', capacity: 20 },
+  { id: 'ev2', title: 'Brawl: N/A vs N/A', date: '2026-08-16T19:00:00-03:00', description: 'Confronto direto entre as duas gangs no topo do ranking. Transmissão ao vivo no Discord.', capacity: 20 },
   { id: 'ev3', title: 'Ranked Reset — Temporada 4', date: '2026-08-17T00:00:00-03:00', description: 'Reinício de pontuação geral. Os top 10 da temporada anterior recebem selo especial no perfil.', capacity: 999 },
 ];
 
