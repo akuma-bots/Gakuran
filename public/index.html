@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GBR·HUB — Gakuran BR</title>
+<meta name="description" content="Hub oficial da comunidade Gakuran BR. InHouse, Events, Gangs e muito mais.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+
+<div class="gate">
+  <div class="gate-eyebrow">SERVIDOR GBR · GAKURAN</div>
+  <h1>GBR<span class="dot">·</span>HUB</h1>
+  <div class="gate-sub">Gakuran Hub</div>
+  <p>Acesso único via Discord — sua conta do servidor já é seu login.</p>
+  <a class="gate-discord" href="/.netlify/functions/auth-start" id="discordBtn">Entrar com Discord</a>
+  <div class="gate-note">Nenhuma senha é armazenada — usamos OAuth do Discord.</div>
+  <div class="gate-error" id="authError" style="display:none;">Login cancelado. Tente novamente.</div>
+</div>
+
+<script>
+  if (new URLSearchParams(window.location.search).get('auth') === 'cancelled') {
+    document.getElementById('authError').style.display = 'block';
+  }
+</script>
+</body>
+</html>
