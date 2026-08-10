@@ -1,0 +1,11 @@
+{
+  "name": "gakuranbr-community",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hub oficial da comunidade Gakuran BR — login via Discord, InHouse, Events e Gangs.",
+  "dependencies": {
+    "@netlify/blobs": "^7.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "tweetnacl": "^1.0.3"
+  }
+}
