@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — GBR·HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><b style="font-family:'Archivo Black',sans-serif;">GBR·HUB</b></div>
+    <nav class="sb-nav">
+      <a class="sb-link active" href="/dashboard.html">Dashboard</a>
+      <a class="sb-link" href="/inhouse.html">InHouse</a>
+      <a class="sb-link" href="/events.html">Events</a>
+      <a class="sb-link" href="/gangs.html">Gangs</a>
+    </nav>
+    <div class="sb-user">
+      <img class="sb-avatar" data-user-avatar alt="">
+      <div class="sb-user-info"><b data-user-name>...</b><small>via Discord OAuth</small></div>
+    </div>
+    <button class="sb-logout" onclick="logout()">Sair</button>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><div class="topbar-title">Dashboard</div><div class="topbar-sub">Bem-vindo de volta ao pátio.</div></div>
+      <a class="btn btn-primary btn-sm" href="/inhouse.html">Entrar numa fila</a>
+    </div>
+    <div class="content">
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-card"><b>—</b><span>Pontos</span></div>
+        <div class="stat-card"><b>—</b><span>Vitórias</span></div>
+        <div class="stat-card"><b>—</b><span>Derrotas</span></div>
+        <div class="stat-card"><b>—</b><span>Sua gang</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Últimas partidas finalizadas</h3><a href="/inhouse.html">Ver InHouse →</a></div>
+        <div class="panel-body" id="historyBody"><div class="empty">Carregando...</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Próximos events</h3><a href="/events.html">Ver todos →</a></div>
+        <div class="panel-body" id="eventsBody"><div class="empty">Carregando...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+(async function(){
+  const user = await requireSession();
+  if(!user) return;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat-card"><b>${user.points || 0}</b><span>Pontos</span></div>
+    <div class="stat-card"><b>${user.wins || 0}</b><span>Vitórias</span></div>
+    <div class="stat-card"><b>${user.losses || 0}</b><span>Derrotas</span></div>
+    <div class="stat-card"><b>${user.gangId ? '✓' : '—'}</b><span>Sua gang</span></div>
+  `;
+
+  try {
+    const ih = await api('inhouse');
+    const hist = ih.history.slice(0,5);
+    document.getElementById('historyBody').innerHTML = hist.length ? `
+      <table><thead><tr><th>Partida</th><th>Modo</th><th>Quando</th></tr></thead>
+      <tbody>${hist.map(h => `<tr><td>${h.id}</td><td class="mono">${h.label}</td><td class="mono">${timeAgo(h.finishedAt)}</td></tr>`).join('')}</tbody></table>
+    ` : `<div class="empty">Nenhuma partida finalizada ainda. Entre numa fila de InHouse!</div>`;
+  } catch(e) { document.getElementById('historyBody').innerHTML = `<div class="empty">Erro ao carregar.</div>`; }
+
+  try {
+    const ev = await api('events');
+    document.getElementById('eventsBody').innerHTML = ev.events.slice(0,3).map(e => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);">
+        <div><div style="font-weight:600;font-size:13.5px;">${e.title}</div><div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim-2);margin-top:3px;">${new Date(e.date).toLocaleString('pt-BR')}</div></div>
+        <span class="pill ${e.registered.includes(ev.userId) ? 'pill-open' : 'pill-full'}">${e.registered.includes(ev.userId) ? 'Inscrito' : e.registered.length + '/' + e.capacity}</span>
+      </div>
+    `).join('');
+  } catch(e) { document.getElementById('eventsBody').innerHTML = `<div class="empty">Erro ao carregar.</div>`; }
+})();
+</script>
+</body>
+</html>
