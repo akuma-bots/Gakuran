@@ -25,7 +25,11 @@ function isAdmin(interaction) {
   return roles.includes(adminRoleId);
 }
 function store() {
-  return getStore('gakuran-data');
+  return getStore({
+    name: 'gakuran-data',
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_BLOGS_TOKEN,
+  });
 }
 
 async function loadUsers(s) {
