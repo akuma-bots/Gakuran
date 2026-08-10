@@ -11,7 +11,7 @@ function dataStore() {
   return getStore({
     name: 'gakuran-data',
     siteID: process.env.NETLIFY_SITE_ID,
-    token: process.env.NETLIFY_BLOGS_TOKEN,
+    token: process.env.NETLIFY_BLOBS_TOKEN,
   });
 }
 
