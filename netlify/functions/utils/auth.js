@@ -8,7 +8,11 @@ function getCookie(header, name) {
 }
 
 function dataStore() {
-  return getStore('gakuran-data');
+  return getStore({
+    name: 'gakuran-data',
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_BLOGS_TOKEN,
+  });
 }
 
 async function getSessionUser(event) {
