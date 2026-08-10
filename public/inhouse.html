@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InHouse — GBR·HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><b style="font-family:'Archivo Black',sans-serif;">GBR·HUB</b></div>
+    <nav class="sb-nav">
+      <a class="sb-link" href="/dashboard.html">Dashboard</a>
+      <a class="sb-link active" href="/inhouse.html">InHouse</a>
+      <a class="sb-link" href="/events.html">Events</a>
+      <a class="sb-link" href="/gangs.html">Gangs</a>
+    </nav>
+    <div class="sb-user">
+      <img class="sb-avatar" data-user-avatar alt="">
+      <div class="sb-user-info"><b data-user-name>...</b><small>via Discord OAuth</small></div>
+    </div>
+    <button class="sb-logout" onclick="logout()">Sair</button>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><div class="topbar-title">InHouse</div><div class="topbar-sub">Filas reais — entra quem quiser jogar.</div></div>
+    </div>
+    <div class="content">
+      <div class="panel-head" style="border:none;padding:0 0 16px;"><h3>Filas em aberto</h3></div>
+      <div class="card-grid" id="queuesGrid" style="margin-bottom:32px;"><div class="empty">Carregando...</div></div>
+
+      <div class="panel-head" style="border:none;padding:0 0 16px;"><h3>Partidas em andamento</h3></div>
+      <div class="card-grid" id="matchesGrid" style="margin-bottom:32px;"></div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Histórico</h3></div>
+        <div class="panel-body" id="historyBody"><div class="empty">Carregando...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+let currentUserId = null;
+
+async function loadInhouse(){
+  const data = await api('inhouse');
+  currentUserId = data.userId;
+
+  document.getElementById('queuesGrid').innerHTML = data.queueDefs.map(def => {
+    const members = data.queues[def.id] || [];
+    const meIn = members.some(m => m.id === currentUserId);
+    return `
+      <div class="card">
+        <span class="pill ${members.length >= def.capacity ? 'pill-full' : 'pill-open'}">${members.length}/${def.capacity}</span>
+        <h4>${def.label}</h4>
+        <div class="member-list">${members.length ? members.map(m=>m.username).join(', ') : 'Fila vazia'}</div>
+        <button class="btn ${meIn ? 'btn-ghost' : 'btn-primary'} btn-sm" onclick="${meIn ? `leaveQueue()` : `joinQueue('${def.id}')`}">${meIn ? 'Sair da fila' : 'Entrar na fila'}</button>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('matchesGrid').innerHTML = data.matches.length ? data.matches.map(m => {
+    const imIn = m.players.some(p => p.id === currentUserId);
+    return `
+      <div class="card">
+        <span class="pill pill-live">Em partida</span>
+        <h4>${m.label}</h4>
+        <div class="member-list">${m.players.map(p=>p.username).join(', ')}</div>
+        ${imIn ? `
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            ${m.players.map(p => `<button class="btn btn-ghost btn-sm" onclick="finishMatch('${m.id}','${p.id}')">${p.username} venceu</button>`).join('')}
+          </div>
+        ` : `<div class="empty" style="padding:0;">Aguardando os jogadores relatarem o resultado.</div>`}
+      </div>
+    `;
+  }).join('') : `<div class="empty">Nenhuma partida em andamento agora.</div>`;
+
+  document.getElementById('historyBody').innerHTML = data.history.length ? `
+    <table><thead><tr><th>Partida</th><th>Modo</th><th>Vencedor</th><th>Quando</th></tr></thead>
+    <tbody>${data.history.map(h => `
+      <tr><td>${h.id}</td><td class="mono">${h.label}</td><td class="win">${(h.players.find(p=>p.id===h.winnerId)||{}).username || '—'}</td><td class="mono">${timeAgo(h.finishedAt)}</td></tr>
+    `).join('')}</tbody></table>
+  ` : `<div class="empty">Nenhuma partida finalizada ainda.</div>`;
+}
+
+async function joinQueue(queueId){
+  try{ await api('inhouse', {method:'POST', body: JSON.stringify({action:'join', queueId})}); toast('Você entrou na fila.','ok'); loadInhouse(); }
+  catch(e){ toast(e.message,'error'); }
+}
+async function leaveQueue(){
+  try{ await api('inhouse', {method:'POST', body: JSON.stringify({action:'leave'})}); toast('Você saiu da fila.','ok'); loadInhouse(); }
+  catch(e){ toast(e.message,'error'); }
+}
+async function finishMatch(matchId, winnerId){
+  try{ await api('inhouse', {method:'POST', body: JSON.stringify({action:'finish', matchId, winnerId})}); toast('Resultado registrado.','ok'); loadInhouse(); }
+  catch(e){ toast(e.message,'error'); }
+}
+
+(async function(){
+  const user = await requireSession();
+  if(!user) return;
+  await loadInhouse();
+  setInterval(loadInhouse, 8000);
+})();
+</script>
+</body>
+</html>
