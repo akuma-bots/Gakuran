@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events — GBR·HUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><b style="font-family:'Archivo Black',sans-serif;">GBR·HUB</b></div>
+    <nav class="sb-nav">
+      <a class="sb-link" href="/dashboard.html">Dashboard</a>
+      <a class="sb-link" href="/inhouse.html">InHouse</a>
+      <a class="sb-link active" href="/events.html">Events</a>
+      <a class="sb-link" href="/gangs.html">Gangs</a>
+    </nav>
+    <div class="sb-user">
+      <img class="sb-avatar" data-user-avatar alt="">
+      <div class="sb-user-info"><b data-user-name>...</b><small>via Discord OAuth</small></div>
+    </div>
+    <button class="sb-logout" onclick="logout()">Sair</button>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div><div class="topbar-title">Events</div><div class="topbar-sub">Inscrição real — sua vaga fica salva.</div></div>
+    </div>
+    <div class="content">
+      <div class="card-grid" id="eventsGrid"><div class="empty">Carregando...</div></div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/app.js"></script>
+<script>
+let uid = null;
+
+async function loadEvents(){
+  const data = await api('events');
+  uid = data.userId;
+  document.getElementById('eventsGrid').innerHTML = data.events.map(e => {
+    const inscrito = e.registered.includes(uid);
+    const lotado = e.registered.length >= e.capacity;
+    return `
+      <div class="card">
+        <span class="pill ${inscrito ? 'pill-open' : (lotado ? 'pill-full' : 'pill-open')}">${inscrito ? 'Inscrito' : (e.registered.length + '/' + e.capacity)}</span>
+        <h4>${e.title}</h4>
+        <div class="member-list">${new Date(e.date).toLocaleString('pt-BR')}</div>
+        <p>${e.description}</p>
+        <button class="btn ${inscrito ? 'btn-ghost' : 'btn-primary'} btn-sm" ${(!inscrito && lotado) ? 'disabled' : ''} onclick="${inscrito ? `unregister('${e.id}')` : `register('${e.id}')`}">
+          ${inscrito ? 'Cancelar inscrição' : (lotado ? 'Vagas esgotadas' : 'Inscrever-se')}
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function register(eventId){
+  try{ await api('events', {method:'POST', body: JSON.stringify({action:'register', eventId})}); toast('Inscrição confirmada!','ok'); loadEvents(); }
+  catch(e){ toast(e.message,'error'); }
+}
+async function unregister(eventId){
+  try{ await api('events', {method:'POST', body: JSON.stringify({action:'unregister', eventId})}); toast('Inscrição cancelada.','ok'); loadEvents(); }
+  catch(e){ toast(e.message,'error'); }
+}
+
+(async function(){
+  const user = await requireSession();
+  if(!user) return;
+  await loadEvents();
+})();
+</script>
+</body>
+</html>
