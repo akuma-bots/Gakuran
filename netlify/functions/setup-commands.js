@@ -1,4 +1,4 @@
-// Registra os slash commands no seu servidor Discord.
+// Registra os slash commands GLOBALMENTE — funciona em qualquer servidor onde o bot estiver.
 // Acesse essa URL UMA VEZ pelo navegador (depois do deploy) pra ativar os comandos:
 //   https://gakuranbr-community.netlify.app/.netlify/functions/setup-commands?key=SEU_SETUP_KEY
 //
@@ -64,13 +64,14 @@ exports.handler = async (event) => {
 
   const clientId = process.env.DISCORD_CLIENT_ID;
   const botToken = process.env.DISCORD_BOT_TOKEN;
-  const guildId = process.env.DISCORD_GUILD_ID;
 
-  if (!clientId || !botToken || !guildId) {
-    return { statusCode: 500, body: 'Faltam variáveis de ambiente: DISCORD_CLIENT_ID, DISCORD_BOT_TOKEN ou DISCORD_GUILD_ID.' };
+  if (!clientId || !botToken) {
+    return { statusCode: 500, body: 'Faltam variáveis de ambiente: DISCORD_CLIENT_ID ou DISCORD_BOT_TOKEN.' };
   }
 
-  const url = `https://discord.com/api/v10/applications/${clientId}/guilds/${guildId}/commands`;
+  // Registro GLOBAL — funciona em qualquer servidor onde o bot estiver.
+  // Pode levar até 1 hora pra propagar (comandos por servidor são instantâneos, mas exigem o Guild ID certo).
+  const url = `https://discord.com/api/v10/applications/${clientId}/commands`;
 
   const res = await fetch(url, {
     method: 'PUT',
@@ -92,6 +93,6 @@ exports.handler = async (event) => {
   return {
     statusCode: 200,
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-    body: `✅ ${data.length} comandos registrados no servidor ${guildId}:\n${list}\n\nJá pode fechar essa página e testar os comandos no Discord.`,
+    body: `✅ ${data.length} comandos GLOBAIS registrados:\n${list}\n\nPodem levar até 1 hora pra aparecer no Discord. Já pode fechar essa página.`,
   };
 };
