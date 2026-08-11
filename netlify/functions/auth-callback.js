@@ -54,8 +54,10 @@ exports.handler = async (event) => {
         wins: 0,
         losses: 0,
         gangId: null,
+        dmOptOut: false,
         createdAt: Date.now(),
       };
+    } else {
     } else {
       users[discordUser.id].username = discordUser.username;
       users[discordUser.id].avatar = discordUser.avatar;
