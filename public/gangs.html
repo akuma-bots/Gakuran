@@ -35,10 +35,13 @@
       <div id="createBox" style="display:none;">
         <div class="panel-head" style="border:none;padding:0 0 14px;"><h3>Criar sua gang</h3></div>
         <div class="form-row">
+          <input type="text" id="gangIconInput" placeholder="Ícone (emoji)" maxlength="4" style="max-width:100px;">
           <input type="text" id="gangNameInput" placeholder="Nome da gang" maxlength="24">
           <button class="btn btn-primary" onclick="createGang()">Criar</button>
         </div>
       </div>
+
+      <div id="myGangBox"></div>
 
       <div class="panel-head" style="border:none;padding:0 0 16px;"><h3>Ranking geral</h3></div>
       <div id="gangsList"><div class="empty">Carregando...</div></div>
@@ -48,13 +51,15 @@
 
 <script src="/assets/app.js"></script>
 <script>
-let uid = null, myGangId = null;
+let uid = null, myGangId = null, myGang = null;
 
 async function loadGangs(){
   const data = await api('gangs');
   uid = data.userId; myGangId = data.userGangId;
+  myGang = data.gangs.find(g => g.id === myGangId) || null;
 
   document.getElementById('createBox').style.display = myGangId ? 'none' : 'block';
+  renderMyGangBox();
 
   document.getElementById('gangsList').innerHTML = data.gangs.length ? data.gangs.map((g, i) => {
     const souMembro = g.members.includes(uid);
@@ -62,38 +67,4 @@ async function loadGangs(){
       <div class="gang-row">
         <div class="gang-rank">${String(i+1).padStart(2,'0')}</div>
         <div class="gang-info">
-          <div style="font-family:'Archivo Black',sans-serif;font-size:15px;">${g.name}</div>
-          <small>${g.members.length} membro${g.members.length!==1?'s':''}</small>
-        </div>
-        <div class="gang-pts">${g.points} pts</div>
-        ${souMembro
-          ? `<button class="btn btn-ghost btn-sm" onclick="leaveGang()">Sair</button>`
-          : (myGangId ? '' : `<button class="btn btn-ghost btn-sm" onclick="joinGang('${g.id}')">Entrar</button>`)
-        }
-      </div>
-    `;
-  }).join('') : `<div class="empty">Nenhuma gang criada ainda. Seja o primeiro!</div>`;
-}
-
-async function createGang(){
-  const name = document.getElementById('gangNameInput').value;
-  try{ await api('gangs', {method:'POST', body: JSON.stringify({action:'create', name})}); toast('Gang criada!','ok'); loadGangs(); }
-  catch(e){ toast(e.message,'error'); }
-}
-async function joinGang(gangId){
-  try{ await api('gangs', {method:'POST', body: JSON.stringify({action:'join', gangId})}); toast('Você entrou na gang.','ok'); loadGangs(); }
-  catch(e){ toast(e.message,'error'); }
-}
-async function leaveGang(){
-  try{ await api('gangs', {method:'POST', body: JSON.stringify({action:'leave'})}); toast('Você saiu da gang.','ok'); loadGangs(); }
-  catch(e){ toast(e.message,'error'); }
-}
-
-(async function(){
-  const user = await requireSession();
-  if(!user) return;
-  await loadGangs();
-})();
-</script>
-</body>
-</html>
+          <div style="font-family:'Archivo Black',sans-serif;font-size:15px;">${g.icon || '⚔️'} ${g.name}</div>
