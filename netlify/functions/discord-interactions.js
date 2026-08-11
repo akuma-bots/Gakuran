@@ -1,4 +1,4 @@
-const nacl = require('tweetnacl');
+hconst nacl = require('tweetnacl');
 const { getStore } = require('@netlify/blobs');
 
 const DEFAULT_EVENTS = [
@@ -161,7 +161,7 @@ async function cmdBanir(interaction) {
   const usuarioId = getOpt(interaction, 'usuario');
   const motivo = getOpt(interaction, 'motivo') || 'Sem motivo informado';
   const desbanir = getOpt(interaction, 'desbanir') || false;
-  const guildId = process.env.DISCORD_GUILD_ID;
+  const guildId = interaction.guild_id;;
 
   const url = `https://discord.com/api/v10/guilds/${guildId}/bans/${usuarioId}`;
   const res = await fetch(url, {
